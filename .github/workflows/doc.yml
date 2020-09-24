@@ -10,6 +10,7 @@ on:
       - '**/*.md'
   # Run for every new release
   release:
+    types: [released]
   repository_dispatch:
     types: [gh-pages]
 
@@ -46,7 +47,7 @@ jobs:
           ./gradlew dokkaHtmlMultiModule
       - name: use "gh-pages" branch as base
         uses: repo-sync/github-sync@v2
-        if: ${{ env.PR_BRANCH }} != ${{ env.PAGES_BRANCH }}
+        if: steps.vars.outputs.deploy_branch != env.PAGES_BRANCH
         with:
           source_repo: ${{ github.repository }}
           source_branch: ${{ env.PAGES_BRANCH }}
@@ -65,7 +66,7 @@ jobs:
       # Commit changes and create a PR if source event is PR
       - name: Create a PR
         uses: repo-sync/pull-request@v2.3
-        if: ${{ env.PR_BRANCH }} != ${{ env.PAGES_BRANCH }}
+        if: steps.vars.outputs.deploy_branch != env.PAGES_BRANCH
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           source_branch: ${{ steps.vars.outputs.deploy_branch }}
