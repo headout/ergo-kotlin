@@ -1,0 +1,6 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+headout.oss.ergo.helpers
+headout.oss.ergo.services
+

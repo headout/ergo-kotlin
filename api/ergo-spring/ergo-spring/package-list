@@ -1,0 +1,6 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+headout.oss.ergo.factory
+headout.oss.ergo.spring
+

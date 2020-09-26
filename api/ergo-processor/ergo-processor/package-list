@@ -1,0 +1,8 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+headout.oss.ergo.codegen.api
+headout.oss.ergo.codegen.task
+headout.oss.ergo.processors
+headout.oss.ergo.utils
+
