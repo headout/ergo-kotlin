@@ -1,8 +1,13 @@
 package headout.oss.ergo
 
+import headout.oss.ergo.factory.JsonFactory
 import headout.oss.ergo.helpers.ImmediateRespondJobResultHandler
+import headout.oss.ergo.models.JobResult
 import headout.oss.ergo.services.SqsMsgService
 import kotlinx.coroutines.*
+import kotlinx.serialization.builtins.UnitSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.parse
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.SqsClient
@@ -48,7 +53,10 @@ fun CoroutineScope.produceTasks() = launch {
 fun main() = runBlocking {
 //    val springApp = MySpringApplication()
 //    springApp.main()
-
+    val input = "{\"taskId\":\"aries.vendor.deleteInvalidBookables\",\"jobId\":\"88a78f20-038b-4d38-8415-c412c9f3fe44\",\"data\":false,\"metadata\":{\"status\":200,\"error\":null}}"
+    val output = JsonFactory.json.parse(JobResult.serializer(Boolean.Companion.serializer()), input)
+    println(output)
+/*
     println("${Thread.currentThread().name} Starting program")
     val job = produceTasks()
     val sqsClient = SqsAsyncClient.builder()
@@ -73,4 +81,5 @@ fun main() = runBlocking {
     })
     cronJob.join()
     service.stop()
+    */
 }
