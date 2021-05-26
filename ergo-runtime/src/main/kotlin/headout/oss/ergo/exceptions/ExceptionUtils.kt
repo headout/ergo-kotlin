@@ -2,7 +2,8 @@ package headout.oss.ergo.exceptions
 
 import headout.oss.ergo.annotations.TaskId
 import kotlinx.coroutines.CancellationException
-import kotlinx.io.ByteArrayOutputStream
+//import kotlinx.io.ByteArrayOutputStream
+import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.nio.charset.StandardCharsets
 

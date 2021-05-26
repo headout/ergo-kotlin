@@ -100,11 +100,11 @@ class JobParserBinder(
             }
             beginControlFlow("else ->")
             addStatement(
-                "val serializer = %T.serializer(%M())",
+                "val serializer = %T.serializer(Unit.%M())",
                 jobResultClass,
                 BUILTIN_SERIALIZERS.getValue(Unit::class.asClassName())
             )
-            addStatement("%M.decodeFromString(serializer, %N as JobResult<Unit>)", jsonRef, "jobResult")
+            addStatement("%M.encodeToString(serializer, %N as JobResult<Unit>)", jsonRef, "jobResult")
             endControlFlow()
         }
         .endControlFlow()
@@ -124,7 +124,7 @@ class JobParserBinder(
             }
             beginControlFlow("else ->")
             addStatement(
-                "val serializer = %T.serializer(%M())",
+                "val serializer = %T.serializer(Unit.%M())",
                 jobResultClass,
                 BUILTIN_SERIALIZERS.getValue(Unit::class.asClassName())
             )
@@ -150,7 +150,7 @@ class JobParserBinder(
                 resultSerializer
             )
             else addStatement(
-                "val serializer = %T.serializer(%M())",
+                "val serializer = %T.serializer(Unit.%M())",
                 jobResultClass,
                 resultSerializer
             )

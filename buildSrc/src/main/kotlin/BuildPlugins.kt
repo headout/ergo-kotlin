@@ -7,7 +7,7 @@ import org.gradle.plugin.use.PluginDependenciesSpec
  */
 // These properties and functions cannot be moved to any other package due to this bug -
 // https://github.com/gradle/gradle/issues/9270 (targeted at V7.0)
-const val kotlinVersion = "1.3.72"
+const val kotlinVersion = "1.5.0"
 
 fun PluginDependenciesSpec.kotlinJvm() {
     kotlin("jvm") version kotlinVersion
