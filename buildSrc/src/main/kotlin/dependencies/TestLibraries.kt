@@ -5,16 +5,16 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 /**
  * Created by shivanshs9 on 01/06/20.
  */
-const val kotlinVersion = "1.3.72"
+const val kotlinVersion = "1.5.0"
 
 object TestLibraries {
     private object Versions {
         const val mockK = "1.10.0"
-        const val coroutinesTest = "1.3.7"
+        const val coroutinesTest = "1.5.0"
         const val jUnit = "4.13"
     }
 
-    const val compileTesting = "com.github.tschuchortdev:kotlin-compile-testing:1.2.8"
+    const val compileTesting = "com.github.tschuchortdev:kotlin-compile-testing:1.4.1"
     const val compilerEmbeddable = "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion"
     const val truth = "com.google.truth:truth:1.0.1"
     const val jUnit = "junit:junit:${Versions.jUnit}"

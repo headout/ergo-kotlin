@@ -12,8 +12,7 @@ import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.serialization.ImplicitReflectionSerializer
-import kotlinx.serialization.stringify
+import kotlinx.serialization.encodeToString
 import mu.KotlinLogging
 import org.junit.Test
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest
@@ -142,11 +141,11 @@ class SqsMsgServiceWithBufferedResultsTest : BaseSqsServiceTest() {
         }
     }
 
-    @ImplicitReflectionSerializer
+//    @ImplicitReflectionSerializer
     @Test
     fun whenTaskRequestValidAndSuspendingTaskAndRanSuccessfully_VerifySuccessResult() {
         val taskId = "suspend.2"
-        val body = JsonFactory.json.stringify(mapOf("request" to WhyDisKolaveriDi(3)))
+        val body = JsonFactory.json.encodeToString(mapOf("request" to WhyDisKolaveriDi(3)))
         mockReceiveMessageResponse(taskId = taskId, body = body)
         msgService.start()
         coVerify {
