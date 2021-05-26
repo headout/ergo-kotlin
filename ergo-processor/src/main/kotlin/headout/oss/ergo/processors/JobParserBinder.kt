@@ -47,7 +47,7 @@ class JobParserBinder(
             bindingMap.values.forEach { controllerBind ->
                 controllerBind.tasks.forEach { taskBind ->
                     if (taskBind.isRequestDataNeeded()) addStatement(
-                        "%S -> %M.parse(%T.serializer(), %N)",
+                        "%S -> %M.decodeFromString(%T.serializer(), %N)",
                         taskBind.task.taskId,
                         jsonRef,
                         taskBind.requestDataClassName,
@@ -94,7 +94,7 @@ class JobParserBinder(
             bindingMap.values.forEach { controllerBind ->
                 controllerBind.tasks.forEach { taskBind ->
                     val paramJobResultClass = addSerializerForTask(taskBind, jobResultClass)
-                    addStatement("%M.stringify(serializer, %N as %T)", jsonRef, "jobResult", paramJobResultClass)
+                    addStatement("%M.encodeToString(serializer, %N as %T)", jsonRef, "jobResult", paramJobResultClass)
                     endControlFlow()
                 }
             }
@@ -104,7 +104,7 @@ class JobParserBinder(
                 jobResultClass,
                 BUILTIN_SERIALIZERS.getValue(Unit::class.asClassName())
             )
-            addStatement("%M.stringify(serializer, %N as JobResult<Unit>)", jsonRef, "jobResult")
+            addStatement("%M.decodeFromString(serializer, %N as JobResult<Unit>)", jsonRef, "jobResult")
             endControlFlow()
         }
         .endControlFlow()
@@ -118,7 +118,7 @@ class JobParserBinder(
             bindingMap.values.forEach { controllerBind ->
                 controllerBind.tasks.forEach { taskBind ->
                     addSerializerForTask(taskBind, jobResultClass)
-                    addStatement("%M.parse(%N, %N)", jsonRef, "serializer", "rawData")
+                    addStatement("%M.decodeFromString(%N, %N)", jsonRef, "serializer", "rawData")
                     endControlFlow()
                 }
             }
@@ -128,7 +128,7 @@ class JobParserBinder(
                 jobResultClass,
                 BUILTIN_SERIALIZERS.getValue(Unit::class.asClassName())
             )
-            addStatement("%M.parse(%N, %N)", jsonRef, "serializer", "rawData")
+            addStatement("%M.decodeFromString(%N, %N)", jsonRef, "serializer", "rawData")
             endControlFlow()
         }
         .endControlFlow()
@@ -188,7 +188,7 @@ class JobParserBinder(
             ByteArray::class to "ByteArraySerializer",
             Boolean::class to "serializer",
             BooleanArray::class to "BooleanArraySerializer",
-            Unit::class to "UnitSerializer"
+            Unit::class to "serializer"
         )
             .mapKeys { it.key.asClassName() }
             .mapValues { MemberName("kotlinx.serialization.builtins", it.value) }
