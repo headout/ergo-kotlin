@@ -13,6 +13,7 @@ kapt {
 
 dependencies {
     implementsCommon()
+    implementsReflection()
     implementsSerialization()
     implementsCoroutine()
     implementation(Libraries.coroutineJdk8)

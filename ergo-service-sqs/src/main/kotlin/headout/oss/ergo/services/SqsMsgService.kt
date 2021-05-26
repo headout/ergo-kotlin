@@ -110,8 +110,8 @@ class SqsMsgService(
 
             repeatUntilCancelled(BaseMsgService.Companion::collectCaughtExceptions) {
                 val messages = sqs.receiveMessage(receiveRequest).await().messages()
-                val cleanLog: (() -> String) -> Unit = if (messages.isNotEmpty()) logger::info else logger::debug
-                cleanLog { "Received ${messages.size} messages" }
+                val message = "Received ${messages.size} messages"
+                if(messages.isNotEmpty()) logger.info(message) else logger.debug(message)
                 for (msg in messages) {
                     val groupId = msg.attributes()[MessageSystemAttributeName.MESSAGE_GROUP_ID]
                         ?: error("Message doesn't have 'MessageGroupId' key!")

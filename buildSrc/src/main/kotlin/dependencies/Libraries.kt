@@ -8,8 +8,8 @@ import org.gradle.kotlin.dsl.kotlin
  */
 object Libraries {
     private object Versions {
-        const val kotlinPoet = "1.6.0"
-        const val coroutine = "1.3.7"
+        const val kotlinPoet = "1.8.0"
+        const val coroutine = "1.5.0"
         const val aws2 = "2.13.26"
         const val spring = "5.1.2.RELEASE"
     }
@@ -20,7 +20,8 @@ object Libraries {
     const val kotlinPoetMetadata = "com.squareup:kotlinpoet-metadata:${Versions.kotlinPoet}"
     const val kotlinPoetMetadataSpecs = "com.squareup:kotlinpoet-metadata-specs:${Versions.kotlinPoet}"
     const val kotlinPoetClassInspector = "com.squareup:kotlinpoet-classinspector-elements:${Versions.kotlinPoet}"
-    const val serializationRuntime = "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0"
+//    const val serializationRuntime = "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0"
+    const val serializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
     const val coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutine}"
     const val coroutineJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.coroutine}"
     const val aws2Bom = "software.amazon.awssdk:bom:${Versions.aws2}"
@@ -46,7 +47,7 @@ fun DependencyHandler.implementsCodeGen() {
 }
 
 fun DependencyHandler.implementsSerialization() {
-    add("implementation", Libraries.serializationRuntime)
+    add("implementation", Libraries.serializationJson)
 }
 
 fun DependencyHandler.implementsCommon() {
