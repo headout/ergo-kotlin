@@ -2,12 +2,6 @@
 name: Update documentation
 
 on:
-  # Run for PR to master changing doc files
-  pull_request:
-    branches:
-      - master
-    paths:
-      - '**/*.md'
   # Run for every new release
   release:
     types: [released]
@@ -19,21 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PAGES_BRANCH: gh-pages
-      EVENT_NAME: ${{ github.event_name }}
-      PR_BRANCH: ${{ github.head_ref }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Declare Version Variables
-        id: vars
-        shell: bash
-        run: |
-          if [[ "$EVENT_NAME" = "pull_request" ]]; then \
-            echo "##[set-output name=deploy_branch;]docs/$PR_BRANCH"; \
-          else \
-            echo "##[set-output name=deploy_branch;]$PAGES_BRANCH"; \
-          fi
-          echo "##[set-output name=pr;]$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')"
       - name: Prepare mkdocs setup
         run: |
           python -m pip install mkdocs-material mkdocs-minify-plugin
@@ -49,15 +31,7 @@ jobs:
       - name: Generate API Docs
         run: |
           ./gradlew dokkaHtmlMultiModule
-      - name: use "gh-pages" branch as base
-        if: steps.vars.outputs.deploy_branch != env.PAGES_BRANCH
-        run: |
-          git fetch
-          git push ${{ github.repository }} ${{ env.PAGES_BRANCH }}:${{ steps.vars.outputs.deploy_branch }} || true
       - name: Deploy Website
-        env:
-          TARGET_BRANCH: ${{ steps.vars.outputs.deploy_branch }}
-          DO_FORCE_PUSH: ${{ steps.vars.outputs.deploy_branch == env.PAGES_BRANCH }}
         run: |
           cp README.md docs/index.md
           cp CHANGELOG.md docs/changelog.md
@@ -66,24 +40,7 @@ jobs:
           mkdir -p docs/ergo-processor && cp ergo-processor/README.md docs/ergo-processor/index.md
           mkdir -p docs/ergo-runtime && cp ergo-runtime/README.md docs/ergo-runtime/index.md
           mkdir -p docs/ergo-service-sqs && cp ergo-service-sqs/README.md docs/ergo-service-sqs/index.md
-          mkdocs gh-deploy -b $TARGET_BRANCH $(if [[ $DO_FORCE_PUSH == true ]]; then echo "--force"; fi)
-      # Commit changes and create a PR if source event is PR
-      - name: Create a PR
-        uses: repo-sync/pull-request@v2.3
-        if: steps.vars.outputs.deploy_branch != env.PAGES_BRANCH
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          source_branch: ${{ steps.vars.outputs.deploy_branch }}
-          destination_branch: ${{ env.PAGES_BRANCH }}
-          pr_title: 'docs: Update docs for PR #${{ steps.vars.outputs.pr }}'
-          pr_body: |
-            Updated GitHub pages with latest from '**./gradlew dokkaHtmlMultiModule**'.
-
-            ---
-
-            Source PR: #${{ steps.vars.outputs.pr }}
-          pr_label: documentation,bot
-          pr_assignee: ${{ github.actor }}
+          mkdocs gh-deploy -b ${{ env.PAGES_BRANCH }} --force
       - name: Cleanup Gradle Cache
         # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
         # Restoring these files from a GitHub Actions cache might cause problems for future builds.
