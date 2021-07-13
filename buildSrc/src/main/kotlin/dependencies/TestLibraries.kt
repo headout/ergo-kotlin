@@ -9,7 +9,7 @@ const val kotlinVersion = "1.5.0"
 
 object TestLibraries {
     private object Versions {
-        const val mockK = "1.10.0"
+        const val mockK = "1.12.0"
         const val coroutinesTest = "1.5.0"
         const val jUnit = "4.13"
     }

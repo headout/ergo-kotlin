@@ -20,7 +20,7 @@ abstract class BaseSqsServiceTest : BaseTest() {
 
     override fun beforeTest() {
         super.beforeTest()
-        msgService = spyk(createSqsMsgService())
+        msgService = spyk(createSqsMsgService(), recordPrivateCalls = true)
         mockkObject(BaseMsgService.Companion)
         mockCommonSqsClient()
     }
