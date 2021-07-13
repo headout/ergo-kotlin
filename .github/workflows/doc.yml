@@ -50,13 +50,9 @@ jobs:
         run: |
           ./gradlew dokkaHtmlMultiModule
       - name: use "gh-pages" branch as base
-        uses: repo-sync/github-sync@v2
         if: steps.vars.outputs.deploy_branch != env.PAGES_BRANCH
-        with:
-          source_repo: ${{ github.repository }}
-          source_branch: ${{ env.PAGES_BRANCH }}
-          destination_branch: ${{ steps.vars.outputs.deploy_branch }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push ${{ github.repository }} ${{ env.PAGES_BRANCH }}:${{ steps.vars.outputs.deploy_branch }} || true
       - name: Deploy Website
         run: |
           cp README.md docs/index.md
@@ -66,7 +62,7 @@ jobs:
           mkdir -p docs/ergo-processor && cp ergo-processor/README.md docs/ergo-processor/index.md
           mkdir -p docs/ergo-runtime && cp ergo-runtime/README.md docs/ergo-runtime/index.md
           mkdir -p docs/ergo-service-sqs && cp ergo-service-sqs/README.md docs/ergo-service-sqs/index.md
-          mkdocs gh-deploy -b ${{ steps.vars.outputs.deploy_branch }}
+          mkdocs gh-deploy -b ${{ steps.vars.outputs.deploy_branch }} --force
       # Commit changes and create a PR if source event is PR
       - name: Create a PR
         uses: repo-sync/pull-request@v2.3
