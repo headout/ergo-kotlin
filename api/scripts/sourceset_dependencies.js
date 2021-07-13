@@ -1,1 +1,1 @@
-sourceset_dependencies = '{}'
+sourceset_dependencies = '{":ergo-service-sqs:dokkaHtmlPartial/main":[],":ergo-annotations:dokkaHtmlPartial/main":[],":ergo-spring:dokkaHtmlPartial/main":[],":ergo-runtime:dokkaHtmlPartial/main":[],":ergo-processor:dokkaHtmlPartial/main":[]}'
