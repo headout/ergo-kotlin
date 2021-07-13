@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/headout/ergo-kotlin/compare/v1.2.0...v1.3.0) (2021-07-13)
+
+
+### Features
+
+* Change to updated serialization APIs ([303b176](https://github.com/headout/ergo-kotlin/commit/303b1768e86930b97381a76eaed5a32521944351))
+* Upgrade kotlin version to 1.5.0 ([7fee60d](https://github.com/headout/ergo-kotlin/commit/7fee60d3774b6d2b1a3fb268740ccdef1f06669b))
+
+
+### Bug Fixes
+
+* docs generation now working ([204c451](https://github.com/headout/ergo-kotlin/commit/204c4512aebd21a1220a5b77e83fe6557416c3b3))
+* unit tests failing due to mockk ([2fc397f](https://github.com/headout/ergo-kotlin/commit/2fc397fcbc91cbaaf845e6fa11cb02e2fd6b6530))
+
 ## [1.2.0](https://github.com/headout/ergo-kotlin/compare/v1.1.5...v1.2.0) (2020-09-24)
 
 
