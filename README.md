@@ -1,4 +1,4 @@
-## Ergo [![Release](https://jitpack.io/v/headout/ergo-kotlin.svg)](https://jitpack.io/#headout/ergo-kotlin) [![Ergo client CI](https://github.com/headout/ergo-kotlin/workflows/Ergo%20client%20CI/badge.svg)](https://github.com/headout/ergo-kotlin/actions?query=workflow%3A"Ergo+client+CI")
+## Ergo Kotlin client [![Release](https://jitpack.io/v/headout/ergo-kotlin.svg)](https://jitpack.io/#headout/ergo-kotlin) [![Ergo client CI](https://github.com/headout/ergo-kotlin/workflows/Ergo%20client%20CI/badge.svg)](https://github.com/headout/ergo-kotlin/actions?query=workflow%3A"Ergo+client+CI")
 
 ### Introduction
 
