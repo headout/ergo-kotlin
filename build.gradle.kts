@@ -11,7 +11,7 @@ allprojects {
 }
 
 subprojects {
-    tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+    tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
         dokkaSourceSets {
             register("main") {
                 sourceRoot("src/main")
@@ -23,8 +23,6 @@ subprojects {
 
 tasks.dokkaHtmlMultiModule.configure {
     outputDirectory.set(rootDir.resolve("docs/api"))
-    includes.setFrom("README.md")
-//    documentationFileName.set("DOC.md")
 }
 
 repositories {

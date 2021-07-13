@@ -36,7 +36,7 @@ nav:
   - 'Ergo Runtime': ergo-runtime/index.md
   - 'Ergo SQS Service': ergo-service-sqs/index.md
   - 'Change Log': changelog.md
-  - 'API Docs': api/-modules.html" target="_blank
+  - 'API Docs': api/index.html" target="_blank
 
 markdown_extensions:
   - admonition
