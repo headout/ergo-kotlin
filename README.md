@@ -29,8 +29,8 @@ plugins {
 }
 
 dependencies {
-  implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION)) // or "stdlib-jdk8"
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0") // JVM dependency
+    implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION)) // or "stdlib-jdk8"
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2") // JVM dependency
 }
 ```
 
@@ -52,7 +52,7 @@ plugins {
 
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version" // or "kotlin-stdlib-jdk8"
-  implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0" // JVM dependency
+  implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2" // JVM dependency
 }
 ```
 
