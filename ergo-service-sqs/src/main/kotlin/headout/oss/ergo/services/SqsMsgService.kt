@@ -59,7 +59,7 @@ class SqsMsgService(
     private var visibilityTimeout by Delegates.notNull<Long>()
 
     private val defaultPingMessageDelay: Long by lazy { getPingDelay(visibilityTimeout) }
-    private val pendingJobs = mutableSetOf<JobId>()
+    private val pendingJobs = mutableMapOf<JobId, Job>()
 
     /**
      * Called on service startup, it initializes required properties like
@@ -83,8 +83,9 @@ class SqsMsgService(
     }
 
     override suspend fun processRequest(request: RequestMsg<Message>): JobResult<*> = try {
-        pendingJobs.add(request.jobId)
-        jobController.runJob(request.taskId, request.jobId, request.message.body())
+        val job = async(Dispatchers.IO) { jobController.runJob(request.taskId, request.jobId, request.message.body()) }
+        pendingJobs[request.jobId] = job
+        job.await()
     } finally {
         pendingJobs.remove(request.jobId)
     }
@@ -136,13 +137,17 @@ class SqsMsgService(
                         logger.debug(MARKER_JOB_BUFFER) { "PING: job '${capture.request.jobId}' still pending (attempt ${capture.attempt})" }
                         val newTimeout =
                             getVisibilityTimeoutForAttempt(visibilityTimeout, capture.attempt)
-                        changeVisibilityTimeout(capture.request, newTimeout)
-                        asyncSendDelayed(
-                            captures,
-                            PingMessageCapture(capture.request, capture.attempt + 1),
-                            defaultPingMessageDelay,
-                            Dispatchers.IO
-                        )
+                        if (newTimeout > MAX_VISIBILITY_TIMEOUT) {
+                            pendingJobs[capture.request.jobId]?.cancel("timed out - visibility time exceeded")
+                        } else {
+                            changeVisibilityTimeout(capture.request, newTimeout)
+                            asyncSendDelayed(
+                                captures,
+                                PingMessageCapture(capture.request, capture.attempt + 1),
+                                defaultPingMessageDelay,
+                                Dispatchers.IO
+                            )
+                        }
                     } else logger.debug(MARKER_JOB_BUFFER) { "PING: jobs - $pendingJobs" }
                 }
             }
@@ -177,8 +182,10 @@ class SqsMsgService(
         }
         response.failed().forEach {
             logger.warn {
-                "Response message, indexed '${it.id()}' for '${jobResults[it.id()
-                    .toInt()]}', failed to send with code '${it.code()}'!"
+                "Response message, indexed '${it.id()}' for '${
+                    jobResults[it.id()
+                        .toInt()]
+                }', failed to send with code '${it.code()}'!"
             }
         }
     }
@@ -203,8 +210,8 @@ class SqsMsgService(
 
     companion object : TaskServiceConversion {
         const val MAX_BUFFERED_MESSAGES = 10
-        private const val MAX_VISIBILITY_TIMEOUT = 43199.toLong()
-        val DEFAULT_VISIBILITY_TIMEOUT = TimeUnit.SECONDS.toSeconds(30)
+        private val MAX_VISIBILITY_TIMEOUT = TimeUnit.HOURS.toSeconds(2) // 2 hours
+        val DEFAULT_VISIBILITY_TIMEOUT = TimeUnit.SECONDS.toSeconds(30) // 30 seconds
 
         private val MARKER_JOB_BUFFER = MarkerFactory.getMarker("PendingJob")
 
@@ -214,7 +221,6 @@ class SqsMsgService(
 
         fun getPingDelay(visibilityTimeout: Long) = TimeUnit.SECONDS.toMillis(round(visibilityTimeout * 0.75).toLong())
 
-        fun getVisibilityTimeoutForAttempt(visibilityTimeout: Long, attempt: Int) =
-            (visibilityTimeout * (attempt + 1)).coerceAtMost(MAX_VISIBILITY_TIMEOUT)
+        fun getVisibilityTimeoutForAttempt(visibilityTimeout: Long, attempt: Int) = (visibilityTimeout * (attempt + 1))
     }
 }
