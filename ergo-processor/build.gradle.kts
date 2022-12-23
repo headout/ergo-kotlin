@@ -1,5 +1,4 @@
 import dependencies.*
-import publish.GithubPackage
 
 plugins {
     kotlinJvm()
@@ -24,7 +23,22 @@ dependencies {
 }
 
 publishing {
-    GithubPackage(project)
+    publications {
+        create<MavenPublication>("default") {
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            name = "ArtifactoryPackages"
+            url = uri("http://artifactory.headout.com/artifactory/absolut-ergo-kotlin/")
+            credentials {
+                username = "artifactory"
+                password = "XK3AXQ4zhBfcn4y#"
+            }
+            isAllowInsecureProtocol = true
+        }
+    }
 }
 
 apply(from = rootProject.file("gradle/common.gradle.kts"))
