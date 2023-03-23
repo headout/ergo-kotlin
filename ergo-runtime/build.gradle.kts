@@ -29,8 +29,8 @@ publishing {
             name = "ArtifactoryPackages"
             url = uri("http://artifactory.headout.com/artifactory/absolut-ergo-kotlin/")
             credentials {
-                username = "artifactory"
-                password = "XK3AXQ4zhBfcn4y#"
+                username = System.getenv("JFROG_ARTIFACTORY_USERNAME")
+                password = System.getenv("JFROG_ARTIFACTORY_PASSWORD")
             }
             isAllowInsecureProtocol = true
         }
