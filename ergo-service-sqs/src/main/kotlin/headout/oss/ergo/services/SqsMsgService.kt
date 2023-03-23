@@ -13,6 +13,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.future.await
 import mu.KotlinLogging
+import org.slf4j.MDC
 import org.slf4j.MarkerFactory
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.*
@@ -84,7 +85,15 @@ class SqsMsgService(
 
     override suspend fun processRequest(request: RequestMsg<Message>): JobResult<*> = try {
         pendingJobs.add(request.jobId)
-        jobController.runJob(request.taskId, request.jobId, request.message.body())
+        val mdcTokenKey = request.jobId.uppercase().replace("-", "")
+        MDC.put("ergo-sqs-jobId", request.jobId)
+        MDC.put("mdcTokenKey", mdcTokenKey)
+        val startTime = System.currentTimeMillis()
+        logger.info { "START:: ergo-sqs-jobId: ${request.jobId}, mdcTokenKey: $mdcTokenKey" }
+        val runJobResult = jobController.runJob(request.taskId, request.jobId, request.message.body())
+        logger.info { "END:: ergo-sqs-jobId: ${request.jobId}, mdcTokenKey: $mdcTokenKey, timeTaken: ${System.currentTimeMillis() - startTime}ms" }
+        MDC.clear()
+        runJobResult
     } finally {
         pendingJobs.remove(request.jobId)
     }
