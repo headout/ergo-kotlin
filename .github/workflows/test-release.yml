@@ -1,0 +1,52 @@
+# This is a basic workflow to help you get started with Actions
+
+name: "Ergo Test Release"
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on: push
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  publish-release:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout latest code
+        uses: actions/checkout@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-            
+            
+      - name: Publish artifact
+        env:
+          HEADOUT_REPOSITORY_USERNAME: ${{ secrets.HEADOUT_REPOSITORY_USERNAME }}
+          HEADOUT_REPOSITORY_PASSWORD: ${{ secrets.HEADOUT_REPOSITORY_PASSWORD }}
+        run: |
+          BRANCH=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
+          echo "${GITHUB_REF}"
+          echo "Branch: ${{ steps.vars.outputs.branch }}"
+          echo "Sha: ${{ steps.vars.outputs.sha_short }}"
+          echo "$(git rev-parse --short HEAD)"
+          echo "${GITHUB_SHA}"
+          TAG=$(echo "$(git rev-parse --short HEAD)-$(date -u +%s)-beta")
+          echo "Artifact Version: ${TAG}"
+          ./gradlew -Pversion=${TAG} publish
+
+      - name: Cleanup Gradle Cache
+        # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+        # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
