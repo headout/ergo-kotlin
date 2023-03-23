@@ -85,7 +85,7 @@ class SqsMsgService(
 
     override suspend fun processRequest(request: RequestMsg<Message>): JobResult<*> = try {
         pendingJobs.add(request.jobId)
-        val mdcTokenKey = UUID.randomUUID().toString()
+        val mdcTokenKey = request.jobId.uppercase().replace("-", "")
         MDC.put("ergo-sqs-jobId", request.jobId)
         MDC.put("mdcTokenKey", mdcTokenKey)
         val startTime = System.currentTimeMillis()
