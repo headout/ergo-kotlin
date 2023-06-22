@@ -1,9 +1,15 @@
 import dependencies.implementsCommon
-import publish.GithubPackage
+import java.io.File
+import java.io.FileInputStream
+import java.util.*
 
 plugins {
     kotlinJvm()
     kotlinDoc()
+}
+
+val props = Properties().apply {
+    load(FileInputStream(File(rootProject.rootDir, "local.properties")))
 }
 
 dependencies {
@@ -21,8 +27,8 @@ publishing {
             name = "HeadoutHostedRepository"
             url = uri("http://nexus.headout.com/repository/maven-headout-internal/")
             credentials {
-                username = System.getenv("HEADOUT_REPOSITORY_USERNAME")
-                password = System.getenv("HEADOUT_REPOSITORY_PASSWORD")
+                username = System.getenv("HEADOUT_REPOSITORY_USERNAME") ?: props.getProperty("headoutRepositoryUsername")
+                password = System.getenv("HEADOUT_REPOSITORY_PASSWORD") ?: props.getProperty("headoutRepositoryPassword")
             }
             isAllowInsecureProtocol = true
         }

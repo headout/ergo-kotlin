@@ -1,11 +1,17 @@
-import dependencies.*
-import publish.GithubPackage
+import dependencies.* // ktlint-disable no-wildcard-imports
+import java.io.File
+import java.io.FileInputStream
+import java.util.*
 
 plugins {
     kotlinJvm()
     kotlinKapt()
     kotlinDoc()
     kotlinxSerialization()
+}
+
+val props = Properties().apply {
+    load(FileInputStream(File(rootProject.rootDir, "local.properties")))
 }
 
 kapt {
@@ -37,8 +43,8 @@ publishing {
             name = "HeadoutHostedRepository"
             url = uri("http://nexus.headout.com/repository/maven-headout-internal/")
             credentials {
-                username = System.getenv("HEADOUT_REPOSITORY_USERNAME")
-                password = System.getenv("HEADOUT_REPOSITORY_PASSWORD")
+                username = System.getenv("HEADOUT_REPOSITORY_USERNAME") ?: props.getProperty("headoutRepositoryUsername")
+                password = System.getenv("HEADOUT_REPOSITORY_PASSWORD") ?: props.getProperty("headoutRepositoryPassword")
             }
             isAllowInsecureProtocol = true
         }
