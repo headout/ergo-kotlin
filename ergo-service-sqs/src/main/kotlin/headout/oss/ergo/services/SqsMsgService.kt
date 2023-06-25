@@ -8,7 +8,7 @@ import headout.oss.ergo.models.JobResult
 import headout.oss.ergo.models.RequestMsg
 import headout.oss.ergo.utils.asyncSendDelayed
 import headout.oss.ergo.utils.repeatUntilCancelled
-import kotlinx.coroutines.*
+import kotlinx.coroutines.* // ktlint-disable no-wildcard-imports
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.future.await
@@ -16,7 +16,7 @@ import mu.KotlinLogging
 import org.slf4j.MDC
 import org.slf4j.MarkerFactory
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import software.amazon.awssdk.services.sqs.model.*
+import software.amazon.awssdk.services.sqs.model.* // ktlint-disable no-wildcard-imports
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.round
@@ -55,7 +55,7 @@ class SqsMsgService(
     private val defaultVisibilityTimeout: Long? = null,
     numWorkers: Int = DEFAULT_NUMBER_WORKERS,
     private val resultHandler: JobResultHandler = InMemoryBufferJobResultHandler(MAX_BUFFERED_MESSAGES),
-    scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
 ) : BaseMsgService<Message>(scope, numWorkers) {
     private var visibilityTimeout by Delegates.notNull<Long>()
 
@@ -83,19 +83,24 @@ class SqsMsgService(
         }
     }
 
-    override suspend fun processRequest(request: RequestMsg<Message>): JobResult<*> = try {
-        pendingJobs.add(request.jobId)
-        val mdcTokenKey = request.jobId.uppercase().replace("-", "")
-        MDC.put("ergo-sqs-jobId", request.jobId)
-        MDC.put("mdcTokenKey", mdcTokenKey)
+    override suspend fun processRequest(request: RequestMsg<Message>): JobResult<*> {
+        val jobId = request.jobId
+        val mdcTokenKey = jobId.uppercase().replace("-", "")
+        pendingJobs.add(mdcTokenKey)
         val startTime = System.currentTimeMillis()
-        logger.info { "START:: ergo-sqs-jobId: ${request.jobId}, mdcTokenKey: $mdcTokenKey" }
-        val runJobResult = jobController.runJob(request.taskId, request.jobId, request.message.body())
-        logger.info { "END:: ergo-sqs-jobId: ${request.jobId}, mdcTokenKey: $mdcTokenKey, timeTaken: ${System.currentTimeMillis() - startTime}ms" }
-        MDC.clear()
-        runJobResult
-    } finally {
-        pendingJobs.remove(request.jobId)
+        logger.info { "START:: jobId: $jobId, request.message.body: ${request.message.body()}" }
+        try {
+            MDC.put("mdcTokenKey", mdcTokenKey)
+            val runJobResult = jobController.runJob(request.taskId, jobId, request.message.body())
+            logger.info { "END:: jobId: $jobId, request.message.body: ${request.message.body()}, timeTaken: ${System.currentTimeMillis() - startTime}ms" }
+            return runJobResult
+        } catch (ex: Exception) {
+            logger.warn("CRON-ERROR:: Failed to complete job, jobId: $jobId, timeTaken: ${System.currentTimeMillis() - startTime}ms", ex)
+            throw ex
+        } finally {
+            MDC.clear()
+            pendingJobs.remove(jobId)
+        }
     }
 
     /**
@@ -120,7 +125,7 @@ class SqsMsgService(
             repeatUntilCancelled(BaseMsgService.Companion::collectCaughtExceptions) {
                 val messages = sqs.receiveMessage(receiveRequest).await().messages()
                 val message = "Received ${messages.size} messages"
-                if(messages.isNotEmpty()) logger.info(message) else logger.debug(message)
+                if (messages.isNotEmpty()) logger.info(message) else logger.debug(message)
                 for (msg in messages) {
                     val groupId = msg.attributes()[MessageSystemAttributeName.MESSAGE_GROUP_ID]
                         ?: error("Message doesn't have 'MessageGroupId' key!")
@@ -150,9 +155,11 @@ class SqsMsgService(
                             captures,
                             PingMessageCapture(capture.request, capture.attempt + 1),
                             defaultPingMessageDelay,
-                            Dispatchers.IO
+                            Dispatchers.IO,
                         )
-                    } else logger.debug(MARKER_JOB_BUFFER) { "PING: jobs - $pendingJobs" }
+                    } else {
+                        logger.debug(MARKER_JOB_BUFFER) { "PING: jobs - $pendingJobs" }
+                    }
                 }
             }
         }
@@ -186,8 +193,10 @@ class SqsMsgService(
         }
         response.failed().forEach {
             logger.warn {
-                "Response message, indexed '${it.id()}' for '${jobResults[it.id()
-                    .toInt()]}', failed to send with code '${it.code()}'!"
+                "Response message, indexed '${it.id()}' for '${jobResults[
+                    it.id()
+                        .toInt(),
+                ]}', failed to send with code '${it.code()}'!"
             }
         }
     }
