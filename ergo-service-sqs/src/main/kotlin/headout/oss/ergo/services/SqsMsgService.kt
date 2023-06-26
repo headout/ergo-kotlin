@@ -86,7 +86,7 @@ class SqsMsgService(
     override suspend fun processRequest(request: RequestMsg<Message>): JobResult<*> {
         val jobId = request.jobId
         val mdcTokenKey = jobId.uppercase().replace("-", "")
-        pendingJobs.add(mdcTokenKey)
+        pendingJobs.add(jobId)
         val startTime = System.currentTimeMillis()
         logger.info { "START:: jobId: $jobId, request.message.body: ${request.message.body()}" }
         try {
