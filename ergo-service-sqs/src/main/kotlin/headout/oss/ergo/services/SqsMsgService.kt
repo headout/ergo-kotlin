@@ -177,7 +177,7 @@ class SqsMsgService(
             SendMessageBatchRequestEntry.builder()
                 .id(index.toString())
                 .messageBody(msgBody)
-                .messageGroupId(jobResult.taskId)
+                .messageGroupId(jobResult.jobId)
                 .build()
         }
         val sendRequest = SendMessageBatchRequest.builder()
