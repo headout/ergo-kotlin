@@ -131,10 +131,10 @@ class SqsMsgService(
                     val groupId = msg.attributes()[MessageSystemAttributeName.MESSAGE_GROUP_ID]
                         ?: error("Message doesn't have 'MessageGroupId' key!")
                     val requestMsg = RequestMsg(toTaskId(groupId), msg.messageId(), msg).also {
-                        logger.debug { "Received request - $it" }
+                        logger.info { "Received request - $it" }
                     }
                     send(requestMsg)
-                    asyncSendDelayed(captures, PingMessageCapture(requestMsg), defaultPingMessageDelay, Dispatchers.IO)
+                    asyncSendDelayed(visibilityCaptures, PingMessageCapture(requestMsg), defaultPingMessageDelay, Dispatchers.IO)
                 }
             }
         }
@@ -147,13 +147,26 @@ class SqsMsgService(
                     is ErrorResultCapture -> handleError(capture)
                     is SuccessResultCapture -> handleSuccess(capture)
                     is RespondResultCapture -> resultHandler.handleResult(capture.result)
-                    is PingMessageCapture -> if (pendingJobs.contains(capture.request.jobId)) {
+                    else -> "Skip other Captures"
+                }
+            }
+        }
+    }
+
+    override suspend fun handleVisibilityCaptures(): Job = launch(Dispatchers.IO) {
+        immortalWorkers(
+            DEFAULT_NUMBER_VISIBILITY_CAPTURE_WORKERS,
+            exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions
+        ) {
+            for (capture in visibilityCaptures) {
+                when(capture) {
+                    is PingMessageCapture -> if (capture.request.jobId in pendingJobs) {
                         logger.debug(MARKER_JOB_BUFFER) { "PING: job '${capture.request.jobId}' still pending (attempt ${capture.attempt})" }
                         val newTimeout =
                             getVisibilityTimeoutForAttempt(visibilityTimeout, capture.attempt)
                         changeVisibilityTimeout(capture.request, newTimeout)
                         asyncSendDelayed(
-                            captures,
+                            visibilityCaptures,
                             PingMessageCapture(capture.request, capture.attempt + 1),
                             getPingDelay(newTimeout),
                             Dispatchers.IO,
@@ -161,6 +174,7 @@ class SqsMsgService(
                     } else {
                         logger.debug(MARKER_JOB_BUFFER) { "PING: jobs - $pendingJobs" }
                     }
+                    else -> "Skip other Captures"
                 }
             }
         }

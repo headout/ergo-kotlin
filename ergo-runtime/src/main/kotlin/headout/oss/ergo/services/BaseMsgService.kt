@@ -35,6 +35,8 @@ abstract class BaseMsgService<T>(
     private val numWorkers: Int = DEFAULT_NUMBER_WORKERS
 ) : CoroutineScope by scope {
     protected val captures = Channel<MessageCapture<T>>(CAPACITY_CAPTURE_BUFFER)
+    protected val visibilityCaptures = Channel<MessageCapture<T>>(CAPACITY_VISIBILITY_CAPTURE_BUFFER)
+
 
     /**
      * Starts the service in a new launcher coroutine
@@ -86,6 +88,7 @@ abstract class BaseMsgService<T>(
             }
         }
         handleCaptures()
+        handleVisibilityCaptures()
     }
 
     /**
@@ -106,6 +109,7 @@ abstract class BaseMsgService<T>(
     protected abstract suspend fun collectRequests(): ReceiveChannel<RequestMsg<T>>
 
     protected abstract suspend fun handleCaptures(): Job
+    protected abstract suspend fun handleVisibilityCaptures(): Job
 
     /**
      * Initializes the service.
@@ -121,8 +125,10 @@ abstract class BaseMsgService<T>(
 
         const val DEFAULT_NUMBER_WORKERS = 8
         const val DEFAULT_NUMBER_CAPTURE_WORKERS = 8
-        const val CAPACITY_CAPTURE_BUFFER = 40
-        const val CAPACITY_REQUEST_BUFFER = 20
+        const val DEFAULT_NUMBER_VISIBILITY_CAPTURE_WORKERS = 8
+        const val CAPACITY_CAPTURE_BUFFER = 80
+        const val CAPACITY_VISIBILITY_CAPTURE_BUFFER = 80
+        const val CAPACITY_REQUEST_BUFFER = 40
 
         // Dummy method, mostly to verify exceptions in unit tests
         fun collectCaughtExceptions(exc: Throwable) {}
