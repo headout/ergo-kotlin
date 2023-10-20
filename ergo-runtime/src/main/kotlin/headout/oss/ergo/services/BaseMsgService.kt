@@ -120,6 +120,7 @@ abstract class BaseMsgService<T>(
         val jobController: BaseJobController = JobController
 
         const val DEFAULT_NUMBER_WORKERS = 8
+        const val DEFAULT_NUMBER_CAPTURE_WORKERS = 8
         const val CAPACITY_CAPTURE_BUFFER = 40
         const val CAPACITY_REQUEST_BUFFER = 20
 

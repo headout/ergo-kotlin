@@ -179,3 +179,6 @@ gradle-app.setting
 
 # End of https://www.gitignore.io/api/git,java,linux,kotlin,intellij,gradle
 /local.properties
+
+# random .idea files
+.idea/*

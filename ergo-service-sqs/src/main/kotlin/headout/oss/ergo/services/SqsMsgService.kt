@@ -7,6 +7,7 @@ import headout.oss.ergo.models.JobId
 import headout.oss.ergo.models.JobResult
 import headout.oss.ergo.models.RequestMsg
 import headout.oss.ergo.utils.asyncSendDelayed
+import headout.oss.ergo.utils.immortalWorkers
 import headout.oss.ergo.utils.repeatUntilCancelled
 import kotlinx.coroutines.* // ktlint-disable no-wildcard-imports
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -110,7 +111,7 @@ class SqsMsgService(
      **/
     override fun shouldProcessRequest(request: RequestMsg<Message>): Boolean {
         val diffInMillis = Date().time - request.receiveTimestamp.time
-        return diffInMillis <= defaultPingMessageDelay
+        return diffInMillis <= defaultPingMessageDelay && request.jobId !in pendingJobs
     }
 
     override suspend fun collectRequests(): ReceiveChannel<RequestMsg<Message>> =
@@ -139,7 +140,7 @@ class SqsMsgService(
         }
 
     override suspend fun handleCaptures(): Job = launch(Dispatchers.IO) {
-        repeatUntilCancelled(BaseMsgService.Companion::collectCaughtExceptions) {
+        immortalWorkers(DEFAULT_NUMBER_CAPTURE_WORKERS, exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions) { workerId ->
             for (capture in captures) {
                 logger.info { "event: '${capture::class.simpleName}', request: '${capture.request}'" }
                 when (capture) {
@@ -154,7 +155,7 @@ class SqsMsgService(
                         asyncSendDelayed(
                             captures,
                             PingMessageCapture(capture.request, capture.attempt + 1),
-                            defaultPingMessageDelay,
+                            getPingDelay(newTimeout),
                             Dispatchers.IO,
                         )
                     } else {
