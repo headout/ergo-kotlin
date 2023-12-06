@@ -25,6 +25,7 @@ object Libraries {
     const val coroutineJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.coroutine}"
     const val aws2Bom = "software.amazon.awssdk:bom:${Versions.aws2}"
     const val aws2Sqs = "software.amazon.awssdk:sqs"
+    const val awsSts = "software.amazon.awssdk:sts:1.12.604"
     const val springCore = "org.springframework:spring-core:${Versions.spring}"
     const val springContext = "org.springframework:spring-context:${Versions.spring}"
     const val springBeans = "org.springframework:spring-beans:${Versions.spring}"
@@ -61,6 +62,7 @@ fun DependencyHandler.implementsCoroutine() {
 fun DependencyHandler.implementsAwsSqs() {
     add("implementation", platform(Libraries.aws2Bom))
     add("implementation", Libraries.aws2Sqs)
+    add("implementation", Libraries.awsSts)
 }
 
 fun DependencyHandler.implementsReflection() {
