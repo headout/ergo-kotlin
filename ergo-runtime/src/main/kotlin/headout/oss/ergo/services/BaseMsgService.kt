@@ -8,12 +8,9 @@ import headout.oss.ergo.factory.JobController
 import headout.oss.ergo.models.JobResult
 import headout.oss.ergo.models.RequestMsg
 import headout.oss.ergo.utils.immortalWorkers
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import java.lang.Thread.currentThread
 
@@ -49,7 +46,9 @@ abstract class BaseMsgService<T>(
                 val result = runCatching {
                     if (shouldProcessRequest(request)) {
                         logger.info { "Processing request - $request" }
-                        processRequest(request)
+                        withTimeout(MAX_TASK_TIMEOUT){
+                            processRequest(request)
+                        }
                     } else {
                         logger.info { "SKIP request - $request" }
                         null
@@ -129,6 +128,7 @@ abstract class BaseMsgService<T>(
         const val CAPACITY_CAPTURE_BUFFER = 80
         const val CAPACITY_VISIBILITY_CAPTURE_BUFFER = 80
         const val CAPACITY_REQUEST_BUFFER = 40
+        const val MAX_TASK_TIMEOUT = 7200000.toLong()
 
         // Dummy method, mostly to verify exceptions in unit tests
         fun collectCaughtExceptions(exc: Throwable) {}

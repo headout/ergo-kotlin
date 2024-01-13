@@ -84,29 +84,25 @@ class SqsMsgService(
         }
     }
 
-    override suspend fun processRequest(request: RequestMsg<Message>): JobResult<*> =
-        withTimeout(MAX_VISIBILITY_TIMEOUT) {
-            val jobId = request.jobId
-            val mdcTokenKey = jobId.uppercase().replace("-", "")
-            pendingJobs.add(jobId)
-            val startTime = System.currentTimeMillis()
-            logger.info { "START:: jobId: $jobId, request.message.body: ${request.message.body()}" }
-            try {
-                MDC.put("mdcTokenKey", mdcTokenKey)
-                val runJobResult = jobController.runJob(request.taskId, jobId, request.message.body())
-                logger.info { "END:: jobId: $jobId, request.message.body: ${request.message.body()}, timeTaken: ${System.currentTimeMillis() - startTime}ms" }
-                return@withTimeout runJobResult
-            } catch (ex: Exception) {
-                logger.warn(
-                    "CRON-ERROR:: Failed to complete job, jobId: $jobId, timeTaken: ${System.currentTimeMillis() - startTime}ms",
-                    ex
-                )
-                throw ex
-            } finally {
-                MDC.clear()
-                pendingJobs.remove(jobId)
-            }
+    override suspend fun processRequest(request: RequestMsg<Message>): JobResult<*> {
+        val jobId = request.jobId
+        val mdcTokenKey = jobId.uppercase().replace("-", "")
+        pendingJobs.add(jobId)
+        val startTime = System.currentTimeMillis()
+        logger.info { "START:: jobId: $jobId, request.message.body: ${request.message.body()}" }
+        try {
+            MDC.put("mdcTokenKey", mdcTokenKey)
+            val runJobResult = jobController.runJob(request.taskId, jobId, request.message.body())
+            logger.info { "END:: jobId: $jobId, request.message.body: ${request.message.body()}, timeTaken: ${System.currentTimeMillis() - startTime}ms" }
+            return runJobResult
+        } catch (ex: Exception) {
+            logger.warn("CRON-ERROR:: Failed to complete job, jobId: $jobId, timeTaken: ${System.currentTimeMillis() - startTime}ms", ex)
+            throw ex
+        } finally {
+            MDC.clear()
+            pendingJobs.remove(jobId)
         }
+    }
 
     /**
      * Should attempt to process request only if it hasn't been pinged yet.
@@ -241,7 +237,6 @@ class SqsMsgService(
     companion object : TaskServiceConversion {
         const val MAX_BUFFERED_MESSAGES = 10
         private const val MAX_VISIBILITY_TIMEOUT = 600.toLong()
-        private const val MAX_TASK_TIMEOUT = 7200000.toLong()
         val DEFAULT_VISIBILITY_TIMEOUT = TimeUnit.SECONDS.toSeconds(30)
 
         private val MARKER_JOB_BUFFER = MarkerFactory.getMarker("PendingJob")
