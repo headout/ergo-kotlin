@@ -156,10 +156,10 @@ class SqsMsgService(
     override suspend fun handleVisibilityCaptures(): Job = launch(Dispatchers.IO) {
         immortalWorkers(
             DEFAULT_NUMBER_VISIBILITY_CAPTURE_WORKERS,
-            exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions
+            exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions,
         ) {
             for (capture in visibilityCaptures) {
-                when(capture) {
+                when (capture) {
                     is PingMessageCapture -> if (capture.request.jobId in pendingJobs) {
                         logger.debug(MARKER_JOB_BUFFER) { "PING: job '${capture.request.jobId}' still pending (attempt ${capture.attempt})" }
                         val newTimeout =
