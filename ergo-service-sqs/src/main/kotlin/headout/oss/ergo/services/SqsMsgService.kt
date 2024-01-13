@@ -236,7 +236,7 @@ class SqsMsgService(
 
     companion object : TaskServiceConversion {
         const val MAX_BUFFERED_MESSAGES = 10
-        private const val MAX_VISIBILITY_TIMEOUT = 43199.toLong()
+        private const val MAX_VISIBILITY_TIMEOUT = 600.toLong()
         val DEFAULT_VISIBILITY_TIMEOUT = TimeUnit.SECONDS.toSeconds(30)
 
         private val MARKER_JOB_BUFFER = MarkerFactory.getMarker("PendingJob")
