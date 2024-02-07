@@ -48,15 +48,15 @@ abstract class BaseMsgService<T>(
             for (request in requests) {
                 val result = runCatching {
                     if (shouldProcessRequest(request)) {
-                        logger.info { "Processing request - $request" }
+                        logger.info { "[WORKERNAME: RequestWorker] [WORKERID: $workerId]: Processing request - $request" }
                         processRequest(request)
                     } else {
-                        logger.info { "SKIP request - $request" }
+                        logger.info { "[WORKERNAME: RequestWorker] [WORKERID: $workerId]: SKIP request - $request" }
                         null
                     }
                 }.onFailure { exc ->
                     logger.error(
-                        "Worker '$workerId' on '${currentThread().name}' caught exception trying to process message '${request.jobId}'",
+                        "[WORKERNAME: RequestWorker] [WORKERID: $workerId]:  on '${currentThread().name}' caught exception trying to process message '${request.jobId}'",
                         exc
                     )
                     collectCaughtExceptions(exc)
@@ -79,6 +79,7 @@ abstract class BaseMsgService<T>(
                     )
                 }
                 if (result != null) {
+                    logger.info { "[WORKERNAME: RequestWorker] [WORKERID: $workerId]: Sending to capture after execution. result - $result" }
                     captures.send(
                         if (result.isError) ErrorResultCapture(request, result)
                         else SuccessResultCapture(request, result)
