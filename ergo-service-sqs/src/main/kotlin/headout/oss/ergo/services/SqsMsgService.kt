@@ -142,7 +142,7 @@ class SqsMsgService(
     override suspend fun handleCaptures(): Job = launch(Dispatchers.IO) {
         immortalWorkers(DEFAULT_NUMBER_CAPTURE_WORKERS, exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions) { workerId ->
             for (capture in captures) {
-                logger.info { "event: '${capture::class.simpleName}', request: '${capture.request}'" }
+                logger.info { "[WORKERNAME: CaptureWorker] [WORKERID: $workerId]: event: '${capture::class.simpleName}', request: '${capture.request}'" }
                 when (capture) {
                     is ErrorResultCapture -> handleError(capture)
                     is SuccessResultCapture -> handleSuccess(capture)
@@ -157,8 +157,9 @@ class SqsMsgService(
         immortalWorkers(
             DEFAULT_NUMBER_VISIBILITY_CAPTURE_WORKERS,
             exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions
-        ) {
+        ) { workerId ->
             for (capture in visibilityCaptures) {
+                logger.info { "[WORKERNAME: VisibilityWorker] [WORKERID: $workerId]: event: '${capture::class.simpleName}', request: '${capture.request}'" }
                 when(capture) {
                     is PingMessageCapture -> if (capture.request.jobId in pendingJobs) {
                         logger.debug(MARKER_JOB_BUFFER) { "PING: job '${capture.request.jobId}' still pending (attempt ${capture.attempt})" }
