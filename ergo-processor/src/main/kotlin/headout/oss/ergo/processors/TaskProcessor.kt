@@ -1,8 +1,8 @@
 package headout.oss.ergo.processors
 
 import com.google.auto.service.AutoService
-import com.squareup.kotlinpoet.classinspector.elements.ElementsClassInspector
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
+import com.squareup.kotlinpoet.metadata.classinspectors.ElementsClassInspector
 import headout.oss.ergo.annotations.Task
 import headout.oss.ergo.codegen.api.CachedClassInspector
 import headout.oss.ergo.codegen.targetType

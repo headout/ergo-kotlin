@@ -30,7 +30,7 @@
 
 # Generated files
 .idea/**/contentModel.xml
-
+./.idea
 # Sensitive or high-churn files
 .idea/**/dataSources/
 .idea/**/dataSources.ids
@@ -182,3 +182,5 @@ gradle-app.setting
 
 # random .idea files
 .idea/*
+
+local.properties
