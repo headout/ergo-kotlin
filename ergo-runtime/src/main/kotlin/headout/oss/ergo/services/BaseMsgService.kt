@@ -63,7 +63,7 @@ abstract class BaseMsgService<T>(
                 }.getOrElse {
                     val error = when {
                         it is BaseJobError -> it
-                        it.message == "request.message.body() must not be null" -> InvalidRequestError(
+                        it.message == "body(...) must not be null" -> InvalidRequestError(
                             it,
                             "message.body() must not be null"
                         )

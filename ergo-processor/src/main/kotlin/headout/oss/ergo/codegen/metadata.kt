@@ -2,7 +2,6 @@ package headout.oss.ergo.codegen
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
-import com.squareup.kotlinpoet.metadata.specs.internal.ClassInspectorUtil
 import headout.oss.ergo.codegen.api.CachedClassInspector
 import headout.oss.ergo.codegen.api.TargetMethod
 import headout.oss.ergo.codegen.api.TargetParameter
@@ -48,18 +47,18 @@ internal fun KotlinProcessingEnvironment.targetType(
     element: TypeElement,
     classInspector: CachedClassInspector
 ): TargetType {
-    return classInspector.toImmutableKmClass(element)?.let { kmClass ->
+    return classInspector.toKmClass(element)?.let { kmClass ->
         val kotlinApi = classInspector.toTypeSpec(kmClass)
         val methods = kotlinApi.funSpecs.map { funSpec ->
             TargetMethod(
                 name = funSpec.name,
-                returnType = funSpec.returnType ?: UNIT,
+                returnType = funSpec.returnType,
                 modifiers = funSpec.modifiers,
                 parameters = funSpec.parameters.toTargetParameters()
             )
         }.associateBy { it.name }
         return TargetType(
-            className = ClassInspectorUtil.createClassName(kmClass.name),
+            className = element.asClassName(),
             methods = methods,
             visibility = kotlinApi.modifiers.visibility()
         )

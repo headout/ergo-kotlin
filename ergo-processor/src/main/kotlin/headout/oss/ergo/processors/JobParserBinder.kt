@@ -26,7 +26,7 @@ class JobParserBinder(
     override fun brewKotlin(brewHook: (FileSpec.Builder) -> Unit): FileSpec =
         FileSpec.builder(IJobParser::class.java.packageName, IJobParser.CLASS_NAME_JOB_PARSER)
             .addType(createJobRequestParser())
-            .addComment("Generated code by Ergo. DO NOT MODIFY!!")
+            .addFileComment("Generated code by Ergo. DO NOT MODIFY!!")
             .build()
 
     private fun createJobRequestParser() = TypeSpec.objectBuilder(

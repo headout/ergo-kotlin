@@ -5,12 +5,12 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 /**
  * Created by shivanshs9 on 01/06/20.
  */
-const val kotlinVersion = "1.5.0"
+const val kotlinVersion = "1.9.21"
 
 object TestLibraries {
     private object Versions {
         const val mockK = "1.12.0"
-        const val coroutinesTest = "1.5.0"
+        const val coroutinesTest = "1.7.3"
         const val jUnit = "4.13"
     }
 
