@@ -31,7 +31,7 @@ class SqsMsgServiceWithImmediateResultTest : BaseSqsServiceTest() {
             assertThat(children.count()).isEqualTo(workersCount)
         }
         val countLauncher = 1
-        val countChannels = 2
+        val countChannels = 3
         val countWorkerSupervisor = 1
         print(msgService.coroutineContext[Job]?.children?.count() ?: 0)
         assertThat(

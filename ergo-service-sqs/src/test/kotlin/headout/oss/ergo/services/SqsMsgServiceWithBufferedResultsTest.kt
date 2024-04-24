@@ -36,7 +36,7 @@ class SqsMsgServiceWithBufferedResultsTest : BaseSqsServiceTest() {
             assertThat(children.count()).isEqualTo(workersCount)
         }
         val countLauncher = 1
-        val countChannels = 2
+        val countChannels = 3
         val countWorkerSupervisor = 1
         // using buffer result handler by default
         val countBufferResultTimeoutTicker = 2

@@ -146,6 +146,15 @@ class SqsMsgService(
                 when (capture) {
                     is ErrorResultCapture -> handleError(capture)
                     is SuccessResultCapture -> handleSuccess(capture)
+                    else -> "Skip other Captures"
+                }
+            }
+        }
+    }
+    override suspend fun handleRespondResultCaptures(): Job = launch(Dispatchers.IO) {
+        immortalWorkers(DEFAULT_NUMBER_RESPONSE_MESSAGE_WORKERS, exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions) {
+            for (capture in respondResultCaptures) {
+                when (capture) {
                     is RespondResultCapture -> resultHandler.handleResult(capture.result)
                     else -> "Skip other Captures"
                 }
@@ -186,34 +195,36 @@ class SqsMsgService(
         deleteMessage(resultCapture.request)
 
     private suspend fun pushResults(jobResults: List<JobResult<*>>) = launch(Dispatchers.IO) {
-        logger.info { "Pushing ${jobResults.size} results!" }
-        val msgEntries = jobResults.mapIndexed { index, jobResult ->
-            val msgBody = parseResult(jobResult)
-            SendMessageBatchRequestEntry.builder()
-                .id(index.toString())
-                .messageBody(msgBody)
-                .messageGroupId(jobResult.taskId)
+            logger.info { "Pushing ${jobResults.size} results!" }
+            val msgEntries = jobResults.mapIndexed { index, jobResult ->
+                val msgBody = parseResult(jobResult)
+                SendMessageBatchRequestEntry.builder()
+                    .id(index.toString())
+                    .messageBody(msgBody)
+                    .messageGroupId(jobResult.taskId)
+                    .build()
+            }
+            val sendRequest = SendMessageBatchRequest.builder()
+                .queueUrl(resultQueueUrl)
+                .entries(msgEntries)
                 .build()
-        }
-        val sendRequest = SendMessageBatchRequest.builder()
-            .queueUrl(resultQueueUrl)
-            .entries(msgEntries)
-            .build()
 
-        val response = sqs.sendMessageBatch(sendRequest).await()
-        response.successful().forEach {
-            logger.info {
-                "Response message '${it.messageId()}' for '${jobResults[it.id().toInt()]}' successfully sent!"
+            val response = sqs.sendMessageBatch(sendRequest).await()
+            response.successful().forEach {
+                logger.info {
+                    "Response message '${it.messageId()}' for '${jobResults[it.id().toInt()]}' successfully sent!"
+                }
             }
-        }
-        response.failed().forEach {
-            logger.warn {
-                "Response message, indexed '${it.id()}' for '${jobResults[
-                    it.id()
-                        .toInt(),
-                ]}', failed to send with code '${it.code()}'!"
+            response.failed().forEach {
+                logger.warn {
+                    "Response message, indexed '${it.id()}' for '${
+                        jobResults[
+                            it.id()
+                                .toInt(),
+                        ]
+                    }', failed to send with code '${it.code()}'!"
+                }
             }
-        }
     }
 
     private suspend fun changeVisibilityTimeout(request: RequestMsg<Message>, visibilityTimeout: Long) =
