@@ -146,7 +146,6 @@ class SqsMsgService(
                 when (capture) {
                     is ErrorResultCapture -> handleError(capture)
                     is SuccessResultCapture -> handleSuccess(capture)
-                    is RespondResultCapture -> resultHandler.handleResult(capture.result)
                     else -> "Skip other Captures"
                 }
             }
