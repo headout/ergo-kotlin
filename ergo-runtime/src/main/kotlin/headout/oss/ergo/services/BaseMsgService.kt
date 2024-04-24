@@ -36,6 +36,7 @@ abstract class BaseMsgService<T>(
 ) : CoroutineScope by scope {
     protected val captures = Channel<MessageCapture<T>>(CAPACITY_CAPTURE_BUFFER)
     protected val visibilityCaptures = Channel<MessageCapture<T>>(CAPACITY_VISIBILITY_CAPTURE_BUFFER)
+    protected val respondResultCaptures = Channel<MessageCapture<T>>(CAPACITY_RESPONSE_CAPTURE_BUFFER)
 
 
     /**
@@ -83,7 +84,7 @@ abstract class BaseMsgService<T>(
                         if (result.isError) ErrorResultCapture(request, result)
                         else SuccessResultCapture(request, result)
                     )
-                    captures.send(RespondResultCapture(request, result))
+                    respondResultCaptures.send(RespondResultCapture(request, result))
                 }
             }
         }
@@ -132,6 +133,7 @@ abstract class BaseMsgService<T>(
         const val DEFAULT_NUMBER_RESPONSE_MESSAGE_WORKERS = 8
         const val CAPACITY_CAPTURE_BUFFER = 80
         const val CAPACITY_VISIBILITY_CAPTURE_BUFFER = 80
+        const val CAPACITY_RESPONSE_CAPTURE_BUFFER= 80
         const val CAPACITY_REQUEST_BUFFER = 40
 
         // Dummy method, mostly to verify exceptions in unit tests
