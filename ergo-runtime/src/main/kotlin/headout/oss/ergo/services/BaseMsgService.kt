@@ -126,6 +126,7 @@ abstract class BaseMsgService<T>(
         const val DEFAULT_NUMBER_WORKERS = 8
         const val DEFAULT_NUMBER_CAPTURE_WORKERS = 8
         const val DEFAULT_NUMBER_VISIBILITY_CAPTURE_WORKERS = 8
+        const val DEFAULT_NUMBER_RESPONSE_MESSAGE_WORKERS = 8
         const val CAPACITY_CAPTURE_BUFFER = 80
         const val CAPACITY_VISIBILITY_CAPTURE_BUFFER = 80
         const val CAPACITY_REQUEST_BUFFER = 40

@@ -186,32 +186,39 @@ class SqsMsgService(
         deleteMessage(resultCapture.request)
 
     private suspend fun pushResults(jobResults: List<JobResult<*>>) = launch(Dispatchers.IO) {
-        logger.info { "Pushing ${jobResults.size} results!" }
-        val msgEntries = jobResults.mapIndexed { index, jobResult ->
-            val msgBody = parseResult(jobResult)
-            SendMessageBatchRequestEntry.builder()
-                .id(index.toString())
-                .messageBody(msgBody)
-                .messageGroupId(jobResult.taskId)
-                .build()
-        }
-        val sendRequest = SendMessageBatchRequest.builder()
-            .queueUrl(resultQueueUrl)
-            .entries(msgEntries)
-            .build()
-
-        val response = sqs.sendMessageBatch(sendRequest).await()
-        response.successful().forEach {
-            logger.info {
-                "Response message '${it.messageId()}' for '${jobResults[it.id().toInt()]}' successfully sent!"
+        immortalWorkers(
+            DEFAULT_NUMBER_RESPONSE_MESSAGE_WORKERS,
+            exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions
+        ) {
+            logger.info { "Pushing ${jobResults.size} results!" }
+            val msgEntries = jobResults.mapIndexed { index, jobResult ->
+                val msgBody = parseResult(jobResult)
+                SendMessageBatchRequestEntry.builder()
+                    .id(index.toString())
+                    .messageBody(msgBody)
+                    .messageGroupId(jobResult.taskId)
+                    .build()
             }
-        }
-        response.failed().forEach {
-            logger.warn {
-                "Response message, indexed '${it.id()}' for '${jobResults[
-                    it.id()
-                        .toInt(),
-                ]}', failed to send with code '${it.code()}'!"
+            val sendRequest = SendMessageBatchRequest.builder()
+                .queueUrl(resultQueueUrl)
+                .entries(msgEntries)
+                .build()
+
+            val response = sqs.sendMessageBatch(sendRequest).await()
+            response.successful().forEach {
+                logger.info {
+                    "Response message '${it.messageId()}' for '${jobResults[it.id().toInt()]}' successfully sent!"
+                }
+            }
+            response.failed().forEach {
+                logger.warn {
+                    "Response message, indexed '${it.id()}' for '${
+                        jobResults[
+                            it.id()
+                                .toInt(),
+                        ]
+                    }', failed to send with code '${it.code()}'!"
+                }
             }
         }
     }
