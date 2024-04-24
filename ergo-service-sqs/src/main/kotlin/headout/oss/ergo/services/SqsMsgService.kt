@@ -196,10 +196,6 @@ class SqsMsgService(
         deleteMessage(resultCapture.request)
 
     private suspend fun pushResults(jobResults: List<JobResult<*>>) = launch(Dispatchers.IO) {
-        immortalWorkers(
-            DEFAULT_NUMBER_RESPONSE_MESSAGE_WORKERS,
-            exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions
-        ) {
             logger.info { "Pushing ${jobResults.size} results!" }
             val msgEntries = jobResults.mapIndexed { index, jobResult ->
                 val msgBody = parseResult(jobResult)
@@ -230,7 +226,6 @@ class SqsMsgService(
                     }', failed to send with code '${it.code()}'!"
                 }
             }
-        }
     }
 
     private suspend fun changeVisibilityTimeout(request: RequestMsg<Message>, visibilityTimeout: Long) =
