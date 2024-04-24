@@ -152,6 +152,16 @@ class SqsMsgService(
             }
         }
     }
+    override suspend fun handleRespondResultCaptures(): Job = launch(Dispatchers.IO) {
+        immortalWorkers(DEFAULT_NUMBER_RESPONSE_MESSAGE_WORKERS, exceptionHandler = BaseMsgService.Companion::collectCaughtExceptions) {
+            for (capture in captures) {
+                when (capture) {
+                    is RespondResultCapture -> resultHandler.handleResult(capture.result)
+                    else -> "Skip other Captures"
+                }
+            }
+        }
+    }
 
     override suspend fun handleVisibilityCaptures(): Job = launch(Dispatchers.IO) {
         immortalWorkers(

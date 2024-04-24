@@ -89,6 +89,7 @@ abstract class BaseMsgService<T>(
         }
         handleCaptures()
         handleVisibilityCaptures()
+        handleRespondResultCaptures()
     }
 
     /**
@@ -110,6 +111,8 @@ abstract class BaseMsgService<T>(
 
     protected abstract suspend fun handleCaptures(): Job
     protected abstract suspend fun handleVisibilityCaptures(): Job
+
+    protected abstract suspend fun handleRespondResultCaptures(): Job
 
     /**
      * Initializes the service.
