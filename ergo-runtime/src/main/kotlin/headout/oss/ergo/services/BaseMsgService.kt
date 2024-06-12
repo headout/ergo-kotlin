@@ -14,6 +14,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import mu.KotlinLogging
 import java.lang.Thread.currentThread
 
@@ -32,12 +33,11 @@ private val logger = KotlinLogging.logger {}
  */
 abstract class BaseMsgService<T>(
     scope: CoroutineScope,
-    private val numWorkers: Int = DEFAULT_NUMBER_WORKERS
+    private val numWorkers: Int = DEFAULT_NUMBER_WORKERS,
 ) : CoroutineScope by scope {
     protected val captures = Channel<MessageCapture<T>>(CAPACITY_CAPTURE_BUFFER)
     protected val visibilityCaptures = Channel<MessageCapture<T>>(CAPACITY_VISIBILITY_CAPTURE_BUFFER)
     protected val respondResultCaptures = Channel<MessageCapture<T>>(CAPACITY_RESPONSE_CAPTURE_BUFFER)
-
 
     /**
      * Starts the service in a new launcher coroutine
@@ -50,7 +50,9 @@ abstract class BaseMsgService<T>(
                 val result = runCatching {
                     if (shouldProcessRequest(request)) {
                         logger.info { "Processing request - $request" }
-                        processRequest(request)
+                        withTimeout(MAX_TASK_TIMEOUT) {
+                            processRequest(request)
+                        }
                     } else {
                         logger.info { "SKIP request - $request" }
                         null
@@ -58,7 +60,7 @@ abstract class BaseMsgService<T>(
                 }.onFailure { exc ->
                     logger.error(
                         "Worker '$workerId' on '${currentThread().name}' caught exception trying to process message '${request.jobId}'",
-                        exc
+                        exc,
                     )
                     collectCaughtExceptions(exc)
                 }.getOrElse {
@@ -66,23 +68,26 @@ abstract class BaseMsgService<T>(
                         it is BaseJobError -> it
                         it.message == "request.message.body() must not be null" -> InvalidRequestError(
                             it,
-                            "message.body() must not be null"
+                            "message.body() must not be null",
                         )
                         else -> LibraryInternalError(
                             it,
-                            "Worker '$workerId' on '${currentThread().name}' failed processing message '${request.jobId}'\n${it.localizedMessage}"
+                            "Worker '$workerId' on '${currentThread().name}' failed processing message '${request.jobId}'\n${it.localizedMessage}",
                         )
                     }
                     JobResult.error(
                         request.taskId,
                         request.jobId,
-                        error
+                        error,
                     )
                 }
                 if (result != null) {
                     captures.send(
-                        if (result.isError) ErrorResultCapture(request, result)
-                        else SuccessResultCapture(request, result)
+                        if (result.isError) {
+                            ErrorResultCapture(request, result)
+                        } else {
+                            SuccessResultCapture(request, result)
+                        },
                     )
                     respondResultCaptures.send(RespondResultCapture(request, result))
                 }
@@ -135,6 +140,7 @@ abstract class BaseMsgService<T>(
         const val CAPACITY_VISIBILITY_CAPTURE_BUFFER = 80
         const val CAPACITY_RESPONSE_CAPTURE_BUFFER= 80
         const val CAPACITY_REQUEST_BUFFER = 40
+        const val MAX_TASK_TIMEOUT = 7200000.toLong()
 
         // Dummy method, mostly to verify exceptions in unit tests
         fun collectCaughtExceptions(exc: Throwable) {}
