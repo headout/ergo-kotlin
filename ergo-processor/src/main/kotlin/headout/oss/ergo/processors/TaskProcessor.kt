@@ -1,8 +1,8 @@
 package headout.oss.ergo.processors
 
 import com.google.auto.service.AutoService
-import com.squareup.kotlinpoet.classinspector.elements.ElementsClassInspector
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
+import com.squareup.kotlinpoet.metadata.classinspectors.ElementsClassInspector
 import headout.oss.ergo.annotations.Task
 import headout.oss.ergo.codegen.api.CachedClassInspector
 import headout.oss.ergo.codegen.targetType
@@ -28,7 +28,7 @@ import javax.tools.Diagnostic
 class TaskProcessor : KotlinAbstractProcessor() {
     internal val classInspector by lazy {
         CachedClassInspector(
-            ElementsClassInspector.create(elementUtils, typeUtils)
+            ElementsClassInspector.create(true, elementUtils, typeUtils)
         )
     }
 

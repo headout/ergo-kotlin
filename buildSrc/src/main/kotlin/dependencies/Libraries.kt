@@ -8,8 +8,8 @@ import org.gradle.kotlin.dsl.kotlin
  */
 object Libraries {
     private object Versions {
-        const val kotlinPoet = "1.8.0"
-        const val coroutine = "1.5.0"
+        const val kotlinPoet = "1.17.0"
+        const val coroutine = "1.8.0"
         const val aws2 = "2.13.26"
         const val spring = "5.1.2.RELEASE"
     }
@@ -17,9 +17,7 @@ object Libraries {
     const val autoService = "com.google.auto.service:auto-service:1.0-rc7"
     const val kotlinMetadata = "me.eugeniomarletti.kotlin.metadata:kotlin-metadata:1.4.0"
     const val kotlinPoetCore = "com.squareup:kotlinpoet:${Versions.kotlinPoet}"
-    const val kotlinPoetMetadata = "com.squareup:kotlinpoet-metadata:${Versions.kotlinPoet}"
-    const val kotlinPoetMetadataSpecs = "com.squareup:kotlinpoet-metadata-specs:${Versions.kotlinPoet}"
-    const val kotlinPoetClassInspector = "com.squareup:kotlinpoet-classinspector-elements:${Versions.kotlinPoet}"
+    const val kotlinPoetMetadata = "com.squareup:kotlinpoet-metadata:1.17.0"
     const val serializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2"
     const val coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutine}"
     const val coroutineJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.coroutine}"
@@ -35,9 +33,8 @@ object Libraries {
 fun DependencyHandler.implementsKotlinPoet() {
     add("implementation", Libraries.kotlinMetadata)
     add("implementation", Libraries.kotlinPoetMetadata)
-    add("implementation", Libraries.kotlinPoetMetadataSpecs)
-    add("implementation", Libraries.kotlinPoetClassInspector)
     add("implementation", Libraries.kotlinPoetCore)
+    add("implementation", "org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0")
 }
 
 fun DependencyHandler.implementsCodeGen() {
