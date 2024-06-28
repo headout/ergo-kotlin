@@ -6,6 +6,7 @@ import com.tschuchort.compiletesting.KotlinCompilation.ExitCode
 import com.tschuchort.compiletesting.SourceFile
 import headout.oss.ergo.processors.TaskProcessor
 import org.intellij.lang.annotations.Language
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlinx.serialization.compiler.extensions.SerializationComponentRegistrar
 import org.junit.Test
 
@@ -13,6 +14,7 @@ import org.junit.Test
  * Created by shivanshs9 on 21/05/20.
  */
 class JavaTaskTest {
+    @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun staticNoArg() {
         val source = """
@@ -32,6 +34,7 @@ class JavaTaskTest {
         assertResult(result)
     }
 
+    @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun staticOneArg() {
         val source = """
@@ -41,8 +44,8 @@ class JavaTaskTest {
 
             class ExampleTask {
                 @Task(taskId="oneArg")
-                public static int square(int num) {
-                    return num * num;
+                public int square(int num) {
+                    return 1;
                 }
             }
         """.trimIndent()
@@ -51,6 +54,7 @@ class JavaTaskTest {
         assertResult(result)
     }
 
+    @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun noArgWithUnitResult() {
         val source = """
@@ -70,6 +74,7 @@ class JavaTaskTest {
         assertResult(result)
     }
 
+    @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun oneArgWithJobRequest() {
         val source = """
@@ -107,6 +112,7 @@ class JavaTaskTest {
         assertResult(result)
     }
 
+    @OptIn(ExperimentalCompilerApi::class)
     private fun assertResult(result: KotlinCompilation.Result) {
         result.sourcesGeneratedByAnnotationProcessor.forEach {
             println(it.canonicalPath)
@@ -115,6 +121,7 @@ class JavaTaskTest {
         assertThat(result.exitCode).isEqualTo(ExitCode.OK)
     }
 
+    @OptIn(ExperimentalCompilerApi::class)
     private fun compile(@Language("java") source: String, vararg helpers: Pair<String, String>) =
         KotlinCompilation().apply {
             sources = listOf(SourceFile.java(EXAMPLE_JAVA_FILE, source)) + helpers.map {
@@ -124,8 +131,8 @@ class JavaTaskTest {
                 )
             }
             annotationProcessors = listOf(TaskProcessor())
+            compilerPluginRegistrars = listOf(SerializationComponentRegistrar())
             inheritClassPath = true
-            compilerPlugins = listOf(SerializationComponentRegistrar())
             messageOutputStream = System.out
         }.compile()
 

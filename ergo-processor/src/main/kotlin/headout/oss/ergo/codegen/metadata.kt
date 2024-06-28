@@ -2,13 +2,16 @@ package headout.oss.ergo.codegen
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
-import com.squareup.kotlinpoet.metadata.specs.internal.ClassInspectorUtil
+import com.squareup.kotlinpoet.metadata.specs.ClassInspector
+import com.squareup.kotlinpoet.metadata.specs.toTypeSpec
 import headout.oss.ergo.codegen.api.CachedClassInspector
 import headout.oss.ergo.codegen.api.TargetMethod
 import headout.oss.ergo.codegen.api.TargetParameter
 import headout.oss.ergo.codegen.api.TargetType
+import headout.oss.ergo.utils.kotlinMetadata
 import headout.oss.ergo.utils.toFunSpec
 import headout.oss.ergo.utils.visibility
+import kotlinx.metadata.internal.extensions.KmClassExtension
 import me.eugeniomarletti.kotlin.processing.KotlinProcessingEnvironment
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.ExecutableElement
@@ -48,22 +51,22 @@ internal fun KotlinProcessingEnvironment.targetType(
     element: TypeElement,
     classInspector: CachedClassInspector
 ): TargetType {
-    return classInspector.toImmutableKmClass(element)?.let { kmClass ->
-        val kotlinApi = classInspector.toTypeSpec(kmClass)
-        val methods = kotlinApi.funSpecs.map { funSpec ->
+    return element.getAnnotation(Metadata::class.java)?.let {
+        val api = element.toTypeSpec(true)
+        val methods = api.funSpecs.map {
             TargetMethod(
-                name = funSpec.name,
-                returnType = funSpec.returnType ?: UNIT,
-                modifiers = funSpec.modifiers,
-                parameters = funSpec.parameters.toTargetParameters()
+                name = it.name,
+                returnType = it.returnType,
+                modifiers = it.modifiers,
+                parameters = it.parameters.toTargetParameters()
             )
         }.associateBy { it.name }
         return TargetType(
-            className = ClassInspectorUtil.createClassName(kmClass.name),
+            className = element.asClassName(),
             methods = methods,
-            visibility = kotlinApi.modifiers.visibility()
+            visibility = api.modifiers.visibility()
         )
-    } ?: javaTargetType(element)
+    } ?: return javaTargetType(element)
 }
 
 private fun Collection<ParameterSpec>.toTargetParameters() = mapIndexed { index, parameterSpec ->

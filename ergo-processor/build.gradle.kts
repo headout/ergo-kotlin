@@ -25,8 +25,8 @@ dependencies {
     testImplementsCodeGen()
 
     // Provides serialization compiler plugin for compiler-testing
-    testImplementation("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
+    testImplementation("org.jetbrains.kotlin:kotlin-serialization-unshaded:$kotlinVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 
 publishing {

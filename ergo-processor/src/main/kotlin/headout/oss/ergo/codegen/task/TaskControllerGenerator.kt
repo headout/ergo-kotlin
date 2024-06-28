@@ -43,7 +43,7 @@ class TaskControllerGenerator internal constructor(
                     if (it.isRequestDataNeeded()) addType(it.createRequestDataSpec())
                 }
             }
-            .addComment("Generated code by Ergo. DO NOT MODIFY!!")
+            .addFileComment("Generated code by Ergo. DO NOT MODIFY!!")
             .build()
     }
 
